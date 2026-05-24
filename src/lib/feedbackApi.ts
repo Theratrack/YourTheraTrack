@@ -121,3 +121,19 @@ export async function analyzeFeedback(id: string): Promise<AiFields | null> {
     return null;
   }
 }
+
+/**
+ * Invoke the send-alert Edge Function to email the manager about negative
+ * feedback. No-op (returns false) when Supabase/Resend isn't available.
+ */
+export async function sendAlert(id: string): Promise<boolean> {
+  if (!supabase) return false;
+  try {
+    const { data, error } = await supabase.functions.invoke('send-alert', {
+      body: { id },
+    });
+    return !error && !!data?.ok;
+  } catch {
+    return false;
+  }
+}

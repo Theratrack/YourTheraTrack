@@ -15,6 +15,7 @@ import {
   insertFeedback,
   resolveFeedback,
   analyzeFeedback,
+  sendAlert,
 } from './feedbackApi';
 
 type Store = {
@@ -83,15 +84,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         try {
           const saved = await insertFeedback(fb);
           setFeedback((prev) => [saved, ...prev]);
-          // Upgrade heuristic AI fields with a real Anthropic pass in the
-          // background; merge in when it returns.
-          void analyzeFeedback(saved.id).then((ai) => {
+          // Background: upgrade AI fields with a real Anthropic pass, then
+          // email the manager if this is negative feedback (so the alert
+          // carries the best available summary).
+          void (async () => {
+            const ai = await analyzeFeedback(saved.id);
             if (ai) {
               setFeedback((prev) =>
                 prev.map((f) => (f.id === saved.id ? { ...f, ...ai } : f))
               );
             }
-          });
+            if (saved.rating <= 3) await sendAlert(saved.id);
+          })();
           return saved;
         } catch (err) {
           console.warn('GuestPulse: insert failed, storing locally —', err);
