@@ -2,12 +2,19 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useState,
   type ReactNode,
 } from 'react';
 import type { Feedback, NewFeedback } from './types';
 import { demoFeedback } from '../data/demo';
 import { heuristicClassify } from './classify';
+import {
+  isSupabaseConfigured,
+  listFeedback,
+  insertFeedback,
+  resolveFeedback,
+} from './feedbackApi';
 
 type Store = {
   feedback: Feedback[];
@@ -28,46 +35,82 @@ function nowTime(): string {
   });
 }
 
+function localFeedback(fb: NewFeedback): Feedback {
+  const ai = heuristicClassify(fb);
+  return {
+    id: `local-${Date.now()}`,
+    rating: fb.rating,
+    department: fb.department || 'General',
+    comment: fb.comment,
+    name: fb.name || 'Anonymous guest',
+    room: fb.room,
+    time: nowTime(),
+    createdAt: new Date().toISOString(),
+    resolved: false,
+    ...ai,
+  };
+}
+
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [feedback, setFeedback] = useState<Feedback[]>(demoFeedback);
-  const [loading] = useState(false);
+  const [loading, setLoading] = useState(isSupabaseConfigured);
+  // True until we successfully load live data from Supabase.
+  const [usingDemoData, setUsingDemoData] = useState(true);
 
-  const addFeedback = useCallback(async (fb: NewFeedback): Promise<Feedback> => {
-    const ai = heuristicClassify(fb);
-    const entry: Feedback = {
-      id: `local-${Date.now()}`,
-      rating: fb.rating,
-      department: fb.department || 'General',
-      comment: fb.comment,
-      name: fb.name || 'Anonymous guest',
-      room: fb.room,
-      time: nowTime(),
-      createdAt: new Date().toISOString(),
-      resolved: false,
-      ...ai,
-    };
-    setFeedback((prev) => [entry, ...prev]);
-    return entry;
+  const refresh = useCallback(async () => {
+    if (!isSupabaseConfigured) return;
+    try {
+      const rows = await listFeedback();
+      setFeedback(rows.length ? rows : demoFeedback);
+      setUsingDemoData(rows.length === 0);
+    } catch (err) {
+      // Network/DNS/policy failure → stay in demo mode so the app still works.
+      console.warn('GuestPulse: falling back to demo data —', err);
+      setUsingDemoData(true);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const markResolved = useCallback(async (id: string) => {
-    setFeedback((prev) =>
-      prev.map((f) => (f.id === id ? { ...f, resolved: true } : f))
-    );
-  }, []);
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
 
-  const refresh = useCallback(async () => {}, []);
+  const addFeedback = useCallback(
+    async (fb: NewFeedback): Promise<Feedback> => {
+      if (isSupabaseConfigured && !usingDemoData) {
+        try {
+          const saved = await insertFeedback(fb);
+          setFeedback((prev) => [saved, ...prev]);
+          return saved;
+        } catch (err) {
+          console.warn('GuestPulse: insert failed, storing locally —', err);
+        }
+      }
+      const entry = localFeedback(fb);
+      setFeedback((prev) => [entry, ...prev]);
+      return entry;
+    },
+    [usingDemoData]
+  );
+
+  const markResolved = useCallback(
+    async (id: string) => {
+      setFeedback((prev) => prev.map((f) => (f.id === id ? { ...f, resolved: true } : f)));
+      if (isSupabaseConfigured && !usingDemoData && !id.startsWith('local-')) {
+        try {
+          await resolveFeedback(id);
+        } catch (err) {
+          console.warn('GuestPulse: resolve failed —', err);
+        }
+      }
+    },
+    [usingDemoData]
+  );
 
   return (
     <StoreContext.Provider
-      value={{
-        feedback,
-        loading,
-        usingDemoData: true,
-        addFeedback,
-        markResolved,
-        refresh,
-      }}
+      value={{ feedback, loading, usingDemoData, addFeedback, markResolved, refresh }}
     >
       {children}
     </StoreContext.Provider>
@@ -80,7 +123,6 @@ export function useStore(): Store {
   return ctx;
 }
 
-// re-export so phase 2 can compute derived stats consistently
 export function deriveStats(feedback: Feedback[]) {
   const total = feedback.length;
   const avg = total ? feedback.reduce((s, f) => s + f.rating, 0) / total : 0;

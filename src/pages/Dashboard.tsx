@@ -29,7 +29,9 @@ export function Dashboard() {
       <div className="dash-body">
         <h1 className="dash-title">
           {HOTEL_NAME} <span className="dash-sub">— last 24 hours</span>
-          {usingDemoData && <span className="data-pill">demo data</span>}
+          <span className={`data-pill ${usingDemoData ? '' : 'live'}`}>
+            {usingDemoData ? 'demo data' : 'live data'}
+          </span>
         </h1>
 
         <div className="kpi-row">
