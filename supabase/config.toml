@@ -1,0 +1,13 @@
+project_id = "guestpulse"
+
+[functions.analyze-feedback]
+# Invoked from the browser with the anon key (a valid JWT), so keep verification on.
+verify_jwt = true
+
+[functions.send-alert]
+# Triggered server-side (from analyze-feedback / DB webhook) with the service
+# role key; left open so it can also be called by automation.
+verify_jwt = false
+
+[functions.weekly-report]
+verify_jwt = true

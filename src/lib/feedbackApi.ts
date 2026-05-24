@@ -96,3 +96,28 @@ export async function resolveFeedback(id: string): Promise<void> {
   const { error } = await supabase.from('feedback').update({ resolved: true }).eq('id', id);
   if (error) throw error;
 }
+
+export type AiFields = Pick<Feedback, 'urgency' | 'aiLabel' | 'aiSuggestion' | 'aiSummary'>;
+
+/**
+ * Invoke the analyze-feedback Edge Function to upgrade a row's AI fields with
+ * a real Anthropic pass. Returns null if Supabase/Anthropic isn't available,
+ * leaving the heuristic classification in place.
+ */
+export async function analyzeFeedback(id: string): Promise<AiFields | null> {
+  if (!supabase) return null;
+  try {
+    const { data, error } = await supabase.functions.invoke('analyze-feedback', {
+      body: { id },
+    });
+    if (error || !data || data.skipped || data.error) return null;
+    return {
+      urgency: data.urgency,
+      aiLabel: data.ai_label,
+      aiSuggestion: data.ai_suggestion,
+      aiSummary: data.ai_summary,
+    };
+  } catch {
+    return null;
+  }
+}
