@@ -9,6 +9,7 @@ import {
 import type { Feedback, NewFeedback } from './types';
 import { demoFeedback } from '../data/demo';
 import { heuristicClassify } from './classify';
+import { useAuth } from './auth';
 import {
   isSupabaseConfigured,
   listFeedback,
@@ -54,6 +55,7 @@ function localFeedback(fb: NewFeedback): Feedback {
 }
 
 export function StoreProvider({ children }: { children: ReactNode }) {
+  const { session } = useAuth();
   const [feedback, setFeedback] = useState<Feedback[]>(demoFeedback);
   const [loading, setLoading] = useState(isSupabaseConfigured);
   // True until we successfully load live data from Supabase.
@@ -74,9 +76,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  // Re-fetch when the signed-in user changes so feedback loads with the
+  // staff JWT (RLS only returns rows to authenticated staff).
+  const userId = session?.user?.id ?? null;
   useEffect(() => {
     void refresh();
-  }, [refresh]);
+  }, [refresh, userId]);
 
   const addFeedback = useCallback(
     async (fb: NewFeedback): Promise<Feedback> => {

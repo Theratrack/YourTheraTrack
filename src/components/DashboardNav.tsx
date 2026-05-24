@@ -1,4 +1,5 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../lib/auth';
 
 const LINKS = [
   { to: '/dashboard', label: 'Dashboard' },
@@ -11,11 +12,19 @@ const LINKS = [
 
 export function DashboardNav() {
   const { pathname } = useLocation();
+  const nav = useNavigate();
+  const { configured, user, signOut } = useAuth();
+
+  const logout = async () => {
+    await signOut();
+    nav('/login', { replace: true });
+  };
+
   return (
     <header className="dash-nav">
       <div className="dash-logo">
         <span className="logo-mark">●</span> GuestPulse
-        <span className="demo-badge">DEMO MODE</span>
+        {!configured && <span className="demo-badge">DEMO MODE</span>}
       </div>
       <nav className="dash-nav-links">
         {LINKS.map((l) => (
@@ -27,6 +36,16 @@ export function DashboardNav() {
             {l.label}
           </Link>
         ))}
+        {configured && user && (
+          <>
+            <span className="dash-user" title={user.email ?? ''}>
+              {user.email}
+            </span>
+            <button className="dash-link logout" onClick={logout}>
+              Sign out
+            </button>
+          </>
+        )}
       </nav>
     </header>
   );

@@ -32,7 +32,9 @@ There is no unit-test runner configured; "run tests" in this repo means
   falls back to in-memory demo data. The app must always run locally with no keys.
 - `src/lib/classify.ts` — heuristic classifier; AI fallback when no Anthropic key
 - `src/lib/store.tsx` — React context holding feedback list + actions
-- `src/pages/*` — one component per route
+- `src/lib/auth.tsx` — Supabase Auth context; demo-open when no backend configured
+- `src/components/ProtectedRoute.tsx` — gates staff-only routes (open in demo mode)
+- `src/pages/*` — one component per route (incl. `Login`)
 - `src/components/*` — shared UI (Stars, UrgencyBadge, Nav)
 - `supabase/migrations/*.sql` — schema
 - `supabase/functions/*` — Edge Functions (analyze-feedback, send-alert, weekly-report)
