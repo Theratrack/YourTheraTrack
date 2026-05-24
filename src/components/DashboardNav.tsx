@@ -2,6 +2,8 @@ import { Link, useLocation } from 'react-router-dom';
 
 const LINKS = [
   { to: '/dashboard', label: 'Dashboard' },
+  { to: '/report', label: 'Weekly Report' },
+  { to: '/qr', label: 'QR Codes' },
   { to: '/feedback', label: 'Try Guest Flow' },
   { to: '/alert', label: 'View Alert Demo' },
   { to: '/', label: 'Back to Home' },
