@@ -41,6 +41,7 @@ export function GuestFeedback() {
           </div>
         </div>
 
+        <div className="mobile-body">
         <h2 className="feedback-q">How was your stay?</h2>
         <p className="feedback-help">Tap a star — it only takes 20 seconds.</p>
 
@@ -60,6 +61,10 @@ export function GuestFeedback() {
               </button>
             );
           })}
+        </div>
+        <div className="star-scale">
+          <span>Poor</span>
+          <span>Excellent</span>
         </div>
 
         <label className="field-label">What area? (optional)</label>
@@ -114,6 +119,7 @@ export function GuestFeedback() {
         </button>
 
         <p className="privacy">🔒 Your feedback goes straight to the management team.</p>
+        </div>
       </div>
     </div>
   );

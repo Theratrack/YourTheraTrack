@@ -23,7 +23,7 @@ export function DashboardNav() {
   return (
     <header className="dash-nav">
       <div className="dash-logo">
-        <span className="logo-mark">●</span> GuestPulse
+        <span className="logo-mark">◆</span> GuestPulse
         {!configured && <span className="demo-badge">DEMO MODE</span>}
       </div>
       <nav className="dash-nav-links">

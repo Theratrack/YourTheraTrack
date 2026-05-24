@@ -49,7 +49,9 @@ export function QRCodes() {
             return (
               <div className="qr-card" key={label}>
                 <div className="qr-dept">{label}</div>
-                <img className="qr-img" src={qrSrc(link)} alt={`QR code for ${label}`} width={160} height={160} />
+                <div className="qr-frame">
+                  <img className="qr-img" src={qrSrc(link)} alt={`QR code for ${label}`} width={156} height={156} />
+                </div>
                 <div className="qr-link">{link}</div>
                 <div className="qr-actions">
                   <button className="btn btn-outline btn-sm" onClick={() => copy(link)}>

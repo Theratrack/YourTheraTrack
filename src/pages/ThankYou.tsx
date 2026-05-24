@@ -13,6 +13,7 @@ export function ThankYou() {
     return (
       <div className="mobile-shell happy-bg">
         <div className="mobile-card">
+          <div className="thanks-body">
           <div className="emoji-big">🎉</div>
           <h2 className="thanks-title">
             Thank you{name ? `, ${name}` : ''}! We&rsquo;re so glad you enjoyed your stay.
@@ -36,6 +37,7 @@ export function ThankYou() {
           <button className="link-btn" onClick={() => nav('/')}>
             Back to home
           </button>
+          </div>
         </div>
       </div>
     );
@@ -44,6 +46,7 @@ export function ThankYou() {
   return (
     <div className="mobile-shell sad-bg">
       <div className="mobile-card">
+        <div className="thanks-body">
         <div className="emoji-big soft">💙</div>
         <h2 className="thanks-title">Thank you{name ? `, ${name}` : ''} for your feedback.</h2>
         <p className="thanks-sub">
@@ -82,6 +85,7 @@ export function ThankYou() {
         <button className="link-btn" onClick={() => nav('/')}>
           Back to home
         </button>
+        </div>
       </div>
     </div>
   );

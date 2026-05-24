@@ -6,6 +6,18 @@ import { UrgencyBadge } from '../components/UrgencyBadge';
 import { useStore, deriveStats } from '../lib/store';
 import { DEPARTMENTS, HOTEL_NAME } from '../lib/types';
 
+function KpiIcon({ d }: { d: string }) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d={d} />
+    </svg>
+  );
+}
+const ICON_INBOX = 'M22 12h-6l-2 3h-4l-2-3H2M5.5 5h13l3 7v6a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-6l3.5-7z';
+const ICON_STAR = 'M12 3l2.7 5.5 6 .9-4.3 4.2 1 6L12 17.8 6.6 19.6l1-6L3.3 9.4l6-.9L12 3z';
+const ICON_ALERT = 'M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z';
+const ICON_CHECK = 'M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z';
+
 export function Dashboard() {
   const nav = useNavigate();
   const { feedback, usingDemoData } = useStore();
@@ -36,20 +48,24 @@ export function Dashboard() {
 
         <div className="kpi-row">
           <div className="kpi">
+            <div className="kpi-ic"><KpiIcon d={ICON_INBOX} /></div>
             <div className="kpi-label">Total Feedback</div>
             <div className="kpi-value">{stats.total}</div>
           </div>
           <div className="kpi">
+            <div className="kpi-ic"><KpiIcon d={ICON_STAR} /></div>
             <div className="kpi-label">Average Rating</div>
             <div className="kpi-value">
               {stats.avg.toFixed(1)} <span className="kpi-star">⭐</span>
             </div>
           </div>
           <div className="kpi alert-kpi">
+            <div className="kpi-ic"><KpiIcon d={ICON_ALERT} /></div>
             <div className="kpi-label">Negative Alerts</div>
             <div className="kpi-value">{stats.negatives}</div>
           </div>
           <div className="kpi positive-kpi">
+            <div className="kpi-ic"><KpiIcon d={ICON_CHECK} /></div>
             <div className="kpi-label">Resolved</div>
             <div className="kpi-value">{stats.resolved}</div>
           </div>
@@ -87,7 +103,7 @@ export function Dashboard() {
 
           <div className="feedback-grid">
             {feedback.map((f) => (
-              <div key={f.id} className={`fb-card ${f.resolved ? 'resolved' : ''}`}>
+              <div key={f.id} className={`fb-card u-${f.urgency} ${f.resolved ? 'resolved' : ''}`}>
                 <div className="fb-top">
                   <div className="fb-time">{f.time}</div>
                   <UrgencyBadge urgency={f.urgency} />
