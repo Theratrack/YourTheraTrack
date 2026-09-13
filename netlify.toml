@@ -1,0 +1,10 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# SPA fallback: client-side routes (/dashboard, /report, /qr, /feedback?dept=…)
+# must serve index.html instead of 404ing on direct hits or refreshes.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
